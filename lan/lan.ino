@@ -5,12 +5,12 @@
 #define pinBTN1 6  // 0
 #define pinBTN2 8  // 1
 #define pinBTN3 9  // 2
-#define pin2WB A0  // 3
-#define pinSW A1   // 4
+#define pin2WB A0  // 3, 4
+#define pinSW A1   // 5, 6
 
 #define SAMPLE_TIME 10 // ms
 #define LPF_DELAY_PREV 0.8
-#define DELAY_MIN 20
+#define DELAY_MIN 2
 #define DELAY_MAX 200
 
 imu = lanLSM9DS1();
@@ -46,14 +46,17 @@ void loop() {
 	if (delay_filtered<DELAY_MIN) delay_filtered = DELAY_MIN;
 	if (delay_filtered>DELAY_MAX) delay_filtered = DELAY_MAX;
 	
-	int val_delay = map(delay_filtered, DELAY_MIN, DELAY_MAX, 0, 255);
+	uint16_t val_delay = map(delay_filtered, DELAY_MIN, DELAY_MAX, 0, 255);
+	uint16_t final_val = val_delay * 256 + val;
 	
 	// Sampling rate is 100hz, update rate is 50hz.
 	if (to_print){
 		to_print = false ;
+		Serial.print(final_val);
+		Serial.print(',');
 		
 	}
-	else to_print = True;
+	else to_print = true;
 	
 	//Serial.print(t); Serial.print("  ");
 	//Serial.print(d_acc_yz_filtered); Serial.print("  ");
