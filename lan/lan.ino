@@ -8,12 +8,22 @@
 #define pin2WB A0  // 3
 #define pinSW A1   // 4
 
+#define SAMPLE_TIME 10 // ms
+#define LPF_DELAY_PREV 0.8
+#define DELAY_MIN 20
+#define DELAY_MAX 200
+
 imu = lanLSM9DS1();
 
 uint8_t read_btns(void);
-unsigned long long int t, last_t = 0;
+unsigned long int t = 10, last_t = 0;
+float delay_filtered = 0.0;
+bool to_print = true ;
+
+uint16_t min_ = 1000, max_ = 0;
 
 void setup() {
+	
 	Serial.begin(9600);
 	Serial1.begin(38400);
 	while(!imu.is_begin());
@@ -21,32 +31,40 @@ void setup() {
 }
 
 void loop() {
-
-	uint8_t val = read_btns();
-	uint8_t imu_status = imu.update();
-	t = millis();
 	
-	while(t - last_t < 12){
+	while(t - last_t < SAMPLE_TIME){
 		t = millis();
 	}
+	
 	last_t = t;
+	
+	uint8_t val = read_btns();
+	uint8_t imu_status = imu.update();
+	
+	delay_filtered = delay_filtered * LPF_DELAY_PREV + imu.get_delay_time() * (1-LPF_DELAY_PREV);
+	
+	if (delay_filtered<DELAY_MIN) delay_filtered = DELAY_MIN;
+	if (delay_filtered>DELAY_MAX) delay_filtered = DELAY_MAX;
+	
+	int val_delay = map(delay_filtered, DELAY_MIN, DELAY_MAX, 0, 255);
+	
+	// Sampling rate is 100hz, update rate is 50hz.
+	if (to_print){
+		to_print = false ;
+		
+	}
+	else to_print = True;
+	
+	//Serial.print(t); Serial.print("  ");
+	//Serial.print(d_acc_yz_filtered); Serial.print("  ");
+	//Serial.println(delay_time_so_far);
+	/*
 	Serial1.print("S,");
-	Serial1.print(millis());
+	Serial1.print(t);
 	Serial1.print(',');
 	Serial1.print(val);
-	Serial1.print(',');
-	Serial1.print(imu.acc[0], 2);
-	Serial1.print(',');
-	Serial1.print(imu.acc[1], 2);
-	Serial1.print(',');
-	Serial1.print(imu.acc[2], 2);
-	Serial1.print(',');
-	Serial1.print(imu.gyr[0], 2);
-	Serial1.print(',');
-	Serial1.print(imu.gyr[1], 2);
-	Serial1.print(',');
-	Serial1.print(imu.gyr[2], 2);
 	Serial1.println(",E");
+	*/
 }
 
 uint8_t read_btns(void){
