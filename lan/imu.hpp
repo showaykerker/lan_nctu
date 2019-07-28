@@ -55,8 +55,7 @@ class lanLSM9DS1{
 				this->acc_yz = curr_acc_yz;
 				// Map d_acc_yz to 0~255 than apply a simple low-pass filter in main function.
 				
-				// Finding Zero-to-Zero Length
-				this->find_zero(curr_acc_yz);			
+				this->find_zero(curr_acc_yz); // Finding Zero-to-Zero Length
 				
 			}
 			else{

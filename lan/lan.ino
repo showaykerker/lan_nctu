@@ -46,14 +46,14 @@ void loop() {
 	if (delay_filtered<DELAY_MIN) delay_filtered = DELAY_MIN;
 	if (delay_filtered>DELAY_MAX) delay_filtered = DELAY_MAX;
 	
-	uint16_t val_delay = map(delay_filtered, DELAY_MIN, DELAY_MAX, 0, 255);
+	uint16_t val_delay = map(delay_filtered, DELAY_MIN, DELAY_MAX, 0, 127);
 	uint16_t final_val = val_delay * 256 + val;
 	
 	// Sampling rate is 100hz, update rate is 50hz.
 	if (to_print){
 		to_print = false ;
-		Serial.print(final_val);
-		Serial.print(',');
+		Serial1.print(final_val);
+		Serial1.print(',');
 		
 	}
 	else to_print = true;
@@ -78,13 +78,13 @@ uint8_t read_btns(void){
 	// 339 - 683 - 1023
 	int val_2wb = analogRead(pin2WB);
 	//Serial.println(val_2wb);
-	if (val_2wb > 800) val += 8;
-	else if (val_2wb > 500) val += 16;
+	if (val_2wb > 800) val += 16;
+	else if (val_2wb > 500) val += 8;
 
 	int val_sw = analogRead(pinSW);
 	//Serial.println(val_sw);
 	if (val_sw > 800) val += 96;
-	else if (val_sw > 500) val += 64;
+	else if (val_sw > 380) val += 64;
 	else if (val_sw > 100) val += 32;
 
 	return val;

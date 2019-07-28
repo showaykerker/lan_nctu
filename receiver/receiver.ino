@@ -16,11 +16,6 @@ void controlChange(byte channel, byte control, byte value) {
 	MidiUSB.sendMIDI(event);
 }
 
-void programChange(byte channel, byte control){
-	midiEventPacket_t event = {0x0C, 0xC0 | channel, control, B0};
-	MidiUSB.sendMIDI(event);
-}
-
 rec_data last_rec, now_rec;
 
 char val;
@@ -44,7 +39,11 @@ void copy_(void){
 }
 
 bool new_data = true ;
+
+bool current_btn[3] = {0};
+uint8_t current_2w = 0;
 uint8_t current_program = 0;
+uint8_t current_acc = 0;
 
 void loop() {
     
@@ -52,29 +51,52 @@ void loop() {
     val = Serial1.read();
 	
 	if (val==','){ 
+		bool has_change = false ;
 		uint16_t cmd_int = cmd.toInt();
 		uint8_t cmd_val = cmd_int;
 		uint8_t cmd_acc = cmd_int >> 8;
-		uint8_t program = cmd_val >> 5;
-		if (program != current_program){
+		uint8_t cmd_program = cmd_val >> 5;
+		
+		if (cmd_program != current_program){ // Reading top switch ( program )
 			controlChange(0, current_program, 0);
-			MidiUSB.flush();
-			controlChange(0, program, 125);
-			MidiUSB.flush();
-			controlChange(0, program, 126);
-			MidiUSB.flush();
-			controlChange(0, program, 127);
-			MidiUSB.flush();
-			current_program = program;
+			controlChange(0, cmd_program, 127);
+			current_program = cmd_program;
+			has_change = true ;
+		}
+		
+		for(int i = 0;i<=2;i++){ // Reading Buttons
+			bool btn = cmd_val%2;
+			if (btn!=current_btn[i]){
+				controlChange(0, 5+i, int(btn)*127);
+				current_btn[i] = btn;
+				has_change = true ;
+			}
+			cmd_val = cmd_val >> 1;
 			
 		}
-		Serial.print(millis());
+		
+		if (cmd_val%4 != current_2w){ // Reading 2-way switch
+			uint8_t sw = cmd_val%4;
+			if (sw == 0) sw = 0;
+			else if(sw == 1) sw = 63;
+			else if(sw == 2) sw = 127;
+			controlChange(0, 8, sw);
+			current_2w = cmd_val%4;
+			has_change = true ;
+		}		
+		
+		if (current_acc != cmd_acc){ // Reading Acceleration.
+			controlChange(0, 4, 64-int(cmd_acc/2)+10);
+			current_acc = cmd_acc;
+			has_change = true ;
+		}
+		
+		if (has_change) MidiUSB.flush();
+		
+		Serial.print(uint8_t(cmd_int));
 		Serial.print(" ");
-		Serial.print(cmd_val);
-		Serial.print(" ");
-		Serial.print(cmd_acc);
-		Serial.print(" ");
-		Serial.println(program);
+		Serial.println(cmd_acc);
+	
 		cmd = "";
 	}
 	else cmd+=val;
