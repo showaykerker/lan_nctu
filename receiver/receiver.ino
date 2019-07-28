@@ -16,6 +16,11 @@ void controlChange(byte channel, byte control, byte value) {
 	MidiUSB.sendMIDI(event);
 }
 
+void programChange(byte channel, byte control){
+	midiEventPacket_t event = {0x0C, 0xC0 | channel, control, B0};
+	MidiUSB.sendMIDI(event);
+}
+
 rec_data last_rec, now_rec;
 
 char val;
@@ -37,56 +42,42 @@ void copy_(void){
 	}
 	last_rec.curr = now_rec.curr;
 }
- 
+
+bool new_data = true ;
+uint8_t current_program = 0;
+
 void loop() {
     
   if (Serial1.available()) {
     val = Serial1.read();
-    //Serial.print(val);
 	
-    if (val == 'E'){
-		//Serial.println('E');
-		copy_();		
-		now_rec.clean();
-		Serial.println(last_rec.val);
-    }
-    else if(val=='\n'){} 
-	else if(val==','){
-		if (cmd!=""){ // ignore first , after 'S'
-			//Serial.println(cmd)
-			switch (now_rec.curr){
-				case 1:
-					now_rec.t = cmd.toInt();
-					break;
-				case 2:
-					now_rec.val = cmd.toInt();
-					break;
-				case 3:
-					now_rec.acc[0] = cmd.toFloat();
-					break;
-				case 4:
-					now_rec.acc[1] = cmd.toFloat();
-					break;
-				case 5:
-					now_rec.acc[2] = cmd.toFloat();
-					break;
-				case 6:
-					now_rec.acc[3] = cmd.toFloat();
-					break;
-				case 7:
-					now_rec.acc[4] = cmd.toFloat();
-					break;
-				case 8:
-					now_rec.acc[5] = cmd.toFloat();
-					break;
-			}
-			cmd = "";
-			now_rec.curr += 1;
+	if (val==','){ 
+		uint16_t cmd_int = cmd.toInt();
+		uint8_t cmd_val = cmd_int;
+		uint8_t cmd_acc = cmd_int >> 8;
+		uint8_t program = cmd_val >> 5;
+		if (program != current_program){
+			controlChange(0, current_program, 0);
+			MidiUSB.flush();
+			controlChange(0, program, 125);
+			MidiUSB.flush();
+			controlChange(0, program, 126);
+			MidiUSB.flush();
+			controlChange(0, program, 127);
+			MidiUSB.flush();
+			current_program = program;
+			
 		}
+		Serial.print(millis());
+		Serial.print(" ");
+		Serial.print(cmd_val);
+		Serial.print(" ");
+		Serial.print(cmd_acc);
+		Serial.print(" ");
+		Serial.println(program);
+		cmd = "";
 	}
-    else{
-		cmd += val;
-	}
+	else cmd+=val;
 	
   }
   

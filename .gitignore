@@ -28,3 +28,9 @@ test/
 *.exe
 *.out
 *.app
+
+*.vcvm
+
+vcv/toneA\.vcv
+
+vcv/toneB\.vcv
