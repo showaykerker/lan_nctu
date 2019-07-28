@@ -1,11 +1,16 @@
 # lan_nctu
 
-## Midi Command
-### Control Change Map
-* Control #0 ~ Control #3 are used to change program.
-* Control #4 is for the mapped value of accelerometer measurement.
-* Control #5 ~ Control #7 are for buttons.
-* Control #8 is for the 3-way switch.
+## Midi Map
+### CONTROL_TYPE 0
+* Control #0 ~ Control #3 are used to change program. (CC)
+* Control #4 is for the mapped value of accelerometer measurement. (CC)
+* Control #8 is for the 3-way switch. (CC)
+* Control #12 ~ Control #14 are for buttons. (CC)
+
+### CONTROL_TYPE 1
+* Control #0, #1, #2, #3, #4, #8 remain the same. (CC)
+* Buttons are used to perform different note with different combinations.
+
 
 ## Data Format between 2 Sparkfun Pro Micro
 ### Each data is a 16-bit integer,
