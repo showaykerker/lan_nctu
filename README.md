@@ -4,7 +4,7 @@
 ### Control Change Map
 * Control #0 ~ Control #3 are used to change program.
 * Control #4 is for the mapped value of accelerometer measurement.
-* Control #5~7 are for buttons.
+* Control #5 ~ Control #7 are for buttons.
 * Control #8 is for the 3-way switch.
 
 ## Data Format between 2 Sparkfun Pro Micro
@@ -26,7 +26,7 @@
 * The calculation of imu used only accelerometer.
 	* In [imu.hpp](https://github.com/showaykerker/lan_nctu/blob/master/lan/imu.hpp)
 		* First, it calculates the root-mean-square value of y-axis reading and z-axis reading since the x-axis is parrallel to the lan itself.
-		* Second, it finds 2 time steps that across value 0 as critical time step.
+		* Second, it finds 2 time neighbhoring steps whose values are across 0 as critical time steps.
 		* Third, it calculates the length of the 2 most recent critical time steps.
 	* In [lan.ino](https://github.com/showaykerker/lan_nctu/blob/master/lan/lan.ino)
 		* The length is mapped from 2 (*10ms) ~ 200 (*10ms) to 0 ~ 127.
