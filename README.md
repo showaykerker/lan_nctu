@@ -2,13 +2,12 @@
 
 ## Midi Map
 ### CONTROL_TYPE 0
-* [CC] Control #0 ~ Control #3 are used to change program.
+* [CC] Control #0 ~ Control #2 are used to change program. (2-way switch)
 * [CC] Control #4 is for the mapped value of accelerometer measurement.
-* [CC] Control #8 is for the 3-way switch.
-* [CC] Control #12 ~ Control #14 are for buttons.
+* [CC] Control #8 ~ Control #10 are for buttons.
 
 ### CONTROL_TYPE 1
-* [CC] Control #0, #1, #2, #3, #4, #8 remain the same.
+* [CC] Control #0, #1, #2, #4 remain the same.
 * [CV] Buttons are used to perform different note with different combinations. (val2note in `reciever.ino`)
 
 
@@ -25,6 +24,7 @@
 	* Bit 3 and bit 4 from the low bits represent the state of the 2-way switch.
 		* only 3 values are used, which are 00, 01 and 10.
 	* Bit 5 and bit 6 from the low bits represent the state of the top switch (program).
+		* Note that top switch is not currently used in reciever. Only changes the LED on lan.
 	* The 7 bit is currently not in used.
 
 ## Calculations of Imu.

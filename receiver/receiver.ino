@@ -6,9 +6,9 @@
 #define NOTE_LAST 200 // ms
 #define VELOCITY 127
 
-// For control type 1
+// For control type 1 64
 // 64 middle C, 65 middle C# and so on
-uint8_t val2note[8] = {64, 66, 67, 69, 71, 73, 74, 76};
+uint8_t val2note[8] = {76, 68, 73, 66, 75, 70, 72, 64};
 
 void setup() {
   Serial.begin(115200);
@@ -24,7 +24,6 @@ bool current_btn[3] = {0};
 uint32_t t_last_note = 0;
 uint8_t previous_btn_val = 0;
 uint8_t current_2w = 0;
-uint8_t current_program = 0;
 uint8_t current_acc = 0;
 
 void loop() {
@@ -33,21 +32,12 @@ void loop() {
     val = Serial1.read();
 	
 	if (val==','){ 
-		bool program_has_change = false ;
 		bool btn_has_change = false ;
 		bool sw_has_change = false ;
 		bool acc_has_change = false ;
 		uint16_t cmd_int = cmd.toInt();
 		uint8_t cmd_val = cmd_int;
 		uint8_t cmd_acc = cmd_int >> 8;
-		uint8_t cmd_program = cmd_val >> 5;
-		
-		if (cmd_program != current_program){ // Reading top switch ( program )
-			controlChange(0, current_program, 0);
-			controlChange(0, cmd_program, 127);
-			current_program = cmd_program;
-			program_has_change = true ;
-		}
 		
 		for(int i = 0;i<=2;i++){ // Reading Buttons
 			bool btn = cmd_val%2;
@@ -74,12 +64,10 @@ void loop() {
 		Serial.println(t_last_note);
 		
 		if (cmd_val%4 != current_2w){ // Reading 2-way switch
-			uint8_t sw = cmd_val%4;
-			if (sw == 0) sw = 0;
-			else if(sw == 1) sw = 63;
-			else if(sw == 2) sw = 127;
-			controlChange(0, 8, sw);
-			current_2w = cmd_val%4;
+			uint8_t sw = cmd_val%4; // 0 1 2
+			controlChange(0, current_2w, 0);
+			controlChange(0, sw, 127);
+			current_2w = sw;
 			sw_has_change = true ;
 		}		
 		
@@ -89,7 +77,7 @@ void loop() {
 			acc_has_change = true ;
 		}
 		
-		if (program_has_change || btn_has_change || sw_has_change || acc_has_change) MidiUSB.flush();
+		if (btn_has_change || sw_has_change || acc_has_change) MidiUSB.flush();
 		
 		Serial.print(uint8_t(cmd_int));
 		Serial.print(" ");
