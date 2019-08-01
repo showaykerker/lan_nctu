@@ -1,5 +1,4 @@
 #include <Adafruit_NeoPixel.h>
-#include "strip_script.h"
 #define pinStripTop 5
 #define pinStripBot 4
 #define nStripPixel 24
@@ -11,6 +10,7 @@ uint8_t light_set = 0;
 uint32_t current_light_count = 0;
 float light_count_length[4] = {1000, 480, 90, 100}; // ms
 float light_count_cut[4]    = {1000, 160, 30, 100}; // ms
+uint16_t pattern2_last_move = 0;
 #define LPF_RAND_STRIP 0.95
 
 #include "imu.hpp"
@@ -31,6 +31,7 @@ uint8_t read_btns(void);
 unsigned long int t = 10, last_t = 0;
 float delay_filtered = 0.0;
 bool to_print = true ;
+uint8_t to_read = 0;
 
 uint16_t min_ = 1000, max_ = 0;
 
@@ -64,18 +65,34 @@ void change_light(uint8_t val, uint16_t val_delay){
 					for (int k = 0; k<=2; k++) curr_rgbB[j][k] = 0;
 				}
 			}
-			if (current_light_count == 0) curr_rgbB[0][1] = 255;
-			else if (current_light_count == uint8_t(light_count_cut[light_set])-1) curr_rgbB[0][2] = 255;
-			else if (current_light_count == uint8_t(light_count_cut[light_set])*2-1) curr_rgbB[0][0] = 255;
+			if (current_light_count == 0){
+				curr_rgbB[0][1] = 255;
+				pattern2_last_move = 0;
+			}
+			else if (current_light_count == uint8_t(light_count_cut[light_set])-1){
+				curr_rgbB[0][2] = 255;
+				pattern2_last_move = current_light_count;
+			}
+			else if (current_light_count == uint8_t(light_count_cut[light_set])*2-1){
+				curr_rgbB[0][0] = 255;
+				pattern2_last_move = current_light_count;
+			}
 			else{
-				if (i_top == 0){ 
-					for(int j = 0; j<=2; j++){
-						if ( float(curr_rgbB[i_top][j]) > 255.0 / 24.0) curr_rgbB[i_top][j] -= uint8_t(255.0 / 24.0);
-						else curr_rgbB[i_top][j] = 0;
+				// 60~255
+				float slice = (255.-60.)/16.;
+				float move_every = light_count_cut[2] / 24.;
+				if (current_light_count-pattern2_last_move>move_every){
+					if (i_top == 0){ 
+						for(int j = 0; j<=2; j++){
+							if ( float(curr_rgbB[i_top][j]) > 60) curr_rgbB[i_top][j] -= uint8_t(slice);
+							else curr_rgbB[i_top][j] = 0;
+						}
 					}
-				}
-				else{
-					for(int j = 0; j<=2; j++) curr_rgbB[24-i_top][j] = curr_rgbB[24-i_top-1][j];
+					else{
+						for(int j = 0; j<=2; j++) curr_rgbB[24-i_top][j] = curr_rgbB[24-i_top-1][j];
+						if (i_top == 23) pattern2_last_move += move_every;
+					}
+					
 				}
 			}
 		}
@@ -121,7 +138,7 @@ void change_light(uint8_t val, uint16_t val_delay){
 		strip_bot.setPixelColor(i_bot, curr_rgbB[i_top][0], curr_rgbB[i_top][1], curr_rgbB[i_top][2]);
 		
 	}
-	Serial.println(current_light_count);
+	//Serial.println(current_light_count);
 	current_light_count = (current_light_count+1) % int(light_count_length[current_light_set]);
 	//strip_top.setBrightness(curr_rgbB[0][3]);
 	//strip_bot.setBrightness(curr_rgbB[0][3]);
@@ -145,6 +162,8 @@ void setup() {
 
 void loop() {
 	
+	
+	
 	while(t - last_t < SAMPLE_TIME){
 		t = millis();
 	}
@@ -166,14 +185,51 @@ void loop() {
 	
 	//Serial.println(t);
 	// Sampling rate is 100hz, update rate is 50hz.
+	to_read = (to_read+1)%8;
+	if (to_read == 0) read_Serial1();
 	if (to_print){
 		to_print = false ;
 		Serial1.print(final_val);
 		Serial1.print(',');
-		
 	}
 	else to_print = true;
 	
+}
+
+
+String cmd_BPM = "";
+
+void read_Serial1(void){
+	uint16_t bits = Serial1.available();
+	if (bits == 0) return;
+	else{		
+		String cmd_last = "";
+		for(int i = 0; i<bits; i++){
+			char new_str = Serial1.read();
+			if (new_str == ','){ // New BPM
+				cmd_last = cmd_BPM;
+				//Serial.print(cmd_BPM); Serial.print(" ");
+				//Serial.println(cmd_last);
+				cmd_BPM = "";
+			}
+			else{
+				cmd_BPM += new_str;
+			}
+			if (i == bits-1){
+				uint16_t new_BPM = cmd_last.toInt();
+				
+				//Serial.println(new_BPM);
+				light_count_length[2] = 24000./float(new_BPM)/3.*4.;
+				light_count_cut[2] = light_count_length[2]/3.;
+				
+				light_count_cut[1] = 16875.0 / float(new_BPM);
+				light_count_length[1] = light_count_cut[1] * 3.;
+				current_light_count = 0;
+			}
+			
+		}
+		
+	}
 }
 
 uint8_t read_btns(void){

@@ -23,71 +23,99 @@ bool new_data = true ;
 bool current_btn[3] = {0};
 uint32_t t_last_note = 0;
 uint8_t previous_btn_val = 0;
+uint8_t current_program = 0;
 uint8_t current_2w = 0;
 uint8_t current_acc = 0;
+uint16_t current_BPM = 300;
+
+midiEventPacket_t rx;
 
 void loop() {
-    
-  if (Serial1.available()) {
-    val = Serial1.read();
+
+	do {
+		rx = MidiUSB.read();
+		if (rx.header != 0) {
+			/*
+			Serial.print("Received: ");
+			Serial.print(rx.byte1); Serial.print(',');
+			Serial.print(rx.byte2); Serial.print(',');
+			Serial.println(rx.byte3);
+			*/
+			uint16_t cmd_BPM = 60.116 * exp(0.0545 * min(max(rx.byte3, 0), 40));
+			
+			if (cmd_BPM != current_BPM){
+				//Serial.print("Write: "); Serial.println(cmd_BPM);
+				Serial1.print(int(cmd_BPM)); Serial1.print(',');
+				current_BPM = cmd_BPM;
+			}
+		}
+	} while (rx.header != 0);
+
 	
-	if (val==','){ 
-		bool btn_has_change = false ;
-		bool sw_has_change = false ;
-		bool acc_has_change = false ;
-		uint16_t cmd_int = cmd.toInt();
-		uint8_t cmd_val = cmd_int;
-		uint8_t cmd_acc = cmd_int >> 8;
-		
-		for(int i = 0;i<=2;i++){ // Reading Buttons
-			bool btn = cmd_val%2;
-			if (btn!=current_btn[i]){
-				if (CONTROL_TYPE==0) controlChange(0, 12+i, int(btn)*127);
-				current_btn[i] = btn;
+	if (Serial1.available()) {
+		val = Serial1.read();
+
+		if (val==','){ 
+			bool program_has_change = false ;
+			bool btn_has_change = false ;
+			bool sw_has_change = false ;
+			bool acc_has_change = false ;
+			
+			uint16_t cmd_int = cmd.toInt();
+			uint8_t cmd_val = cmd_int;
+			uint8_t cmd_program = cmd_val >> 5;
+			uint8_t cmd_acc = cmd_int >> 8;
+			
+			if (cmd_program != current_program){
+				controlChange(0, current_program, 0);
+				controlChange(0, cmd_program, 127);
+				current_program = cmd_program;
+				program_has_change = true;
+			}
+			
+			for(int i = 0;i<=2;i++){ // Reading Buttons
+				if (btn_has_change){
+					uint8_t btn_val = val2note[btn_array_to_value(current_btn)];
+					if (t_last_note != 0)
+						noteOff(0, previous_btn_val, VELOCITY);
+					noteOn(0, btn_val, VELOCITY);
+					t_last_note = millis();
+					previous_btn_val = btn_val;
+				}
+				cmd_val = cmd_val >> 1;
+			}
+			if (millis()-t_last_note>=NOTE_LAST && t_last_note!=0){
+				noteOff(0, previous_btn_val, VELOCITY);
+				t_last_note = 0;
 				btn_has_change = true ;
 			}
-			if (CONTROL_TYPE==1 && btn_has_change){
-				uint8_t btn_val = val2note[btn_array_to_value(current_btn)];
-				if (t_last_note != 0)
-					noteOff(0, previous_btn_val, VELOCITY);
-				noteOn(0, btn_val, VELOCITY);
-				t_last_note = millis();
-				previous_btn_val = btn_val;
+			//Serial.println(t_last_note);
+			
+			if (cmd_val%4 != current_2w){ // Reading 2-way switch
+				uint8_t sw = cmd_val%4; // 0 1 2
+				controlChange(0, current_2w+11, 0);
+				controlChange(0, sw+11, 127);
+				current_2w = sw;
+				sw_has_change = true ;
+			}		
+			
+			if (current_acc != cmd_acc){ // Reading Acceleration.
+				controlChange(0, 4, 64-int(cmd_acc/2)+10);
+				current_acc = cmd_acc;
+				acc_has_change = true ;
 			}
-			cmd_val = cmd_val >> 1;
+			
+			if (program_has_change || btn_has_change || sw_has_change || acc_has_change) MidiUSB.flush();
+			/*
+			Serial.print(uint8_t(cmd_int));
+			Serial.print(" ");
+			Serial.println(cmd_acc);
+			*/
+			cmd = "";
 		}
-		if (CONTROL_TYPE == 1 && millis()-t_last_note>=NOTE_LAST && t_last_note!=0){
-			noteOff(0, previous_btn_val, VELOCITY);
-			t_last_note = 0;
-			btn_has_change = true ;
-		}
-		Serial.println(t_last_note);
-		
-		if (cmd_val%4 != current_2w){ // Reading 2-way switch
-			uint8_t sw = cmd_val%4; // 0 1 2
-			controlChange(0, current_2w, 0);
-			controlChange(0, sw, 127);
-			current_2w = sw;
-			sw_has_change = true ;
-		}		
-		
-		if (current_acc != cmd_acc){ // Reading Acceleration.
-			controlChange(0, 4, 64-int(cmd_acc/2)+10);
-			current_acc = cmd_acc;
-			acc_has_change = true ;
-		}
-		
-		if (btn_has_change || sw_has_change || acc_has_change) MidiUSB.flush();
-		
-		Serial.print(uint8_t(cmd_int));
-		Serial.print(" ");
-		Serial.println(cmd_acc);
-	
-		cmd = "";
+		else cmd+=val;
+
 	}
-	else cmd+=val;
-	
-  }
 }
 
 void copy_(void){
