@@ -1,5 +1,11 @@
 # lan_nctu
 
+## TODO
+### VCV
+* Midi Map of certain control using real midi controller
+### lan
+### Reciever
+
 ## Midi Map
 ### Reciever to VCV
 * [CC] Control #0 ~ Control #3 are used to change program. (top switch)
@@ -29,11 +35,11 @@
 		
 ### Reciever to lan
 * The reciever read BPM from VCV Rack, than pass this value to lan.
-	* The relation between BPM and read value is a exponential function.
-	* Each data contains only 1 16-bit integer which represent BPM ranging from 60 ~ 540.
-	* Note that the calculated BPM has an error to the real value caused by the resolution issue.
+	* The relation between BPM and read value is a exponential function. [data here](https://github.com/showaykerker/lan_nctu/blob/master/CV_to_BPM_Calculation.xlsx)
+	* Each data contains only 1 16-bit integer which represents BPM ranging from 60 ~ 540.
+	* Note that the calculated BPM has an error to the real value caused by the resolution of midi control level.
 
-## Light Effect (TODO)
+## Light Pattern (TODO)
 ### Pattern 1 
 ### Pattern 2 
 ### Pattern 3 - Random
