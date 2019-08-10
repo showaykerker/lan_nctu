@@ -1,17 +1,11 @@
 # lan_nctu
 
-## TODO
-### VCV
-* Midi Map of certain control using real midi controller
-### lan
-### Reciever
-
 ## Midi Map
 ### Reciever to VCV
 * [CC] Control #0 ~ Control #3 are used to change program. (top switch)
 * [CC] Control #4 is for the mapped value of accelerometer measurement.
 * [CC] Control #8 ~ Control #10 are for buttons.
-* [CC] Control #11 ~ Control #13 is for the 2 way switch.
+* [CC] Control #12 ~ Control #14 is for the 2 way switch.
 * [CV] Buttons are used to perform different note with different combinations. (val2note in `reciever.ino`)
 ### VCV to Reciever
 * [CV] VCV pass a value to reciever through channel #1 MW.

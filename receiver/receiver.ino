@@ -63,9 +63,12 @@ void loop() {
 			
 			uint16_t cmd_int = cmd.toInt();
 			uint8_t cmd_val = cmd_int;
-			uint8_t cmd_program = cmd_val >> 5;
+			uint8_t cmd_2w = (cmd_val >> 3) % 4;
+			uint8_t cmd_program = (cmd_val >> 5) % 4;
 			uint8_t cmd_acc = cmd_int >> 8;
-			
+					
+			//Serial.println(cmd_val);
+				
 			if (cmd_program != current_program){
 				controlChange(0, current_program, 0);
 				controlChange(0, cmd_program, 127);
@@ -74,6 +77,11 @@ void loop() {
 			}
 			
 			for(int i = 0;i<=2;i++){ // Reading Buttons
+				bool btn_n_on = cmd_val % 2;
+				if (btn_n_on != current_btn[i]){
+					current_btn[i] = btn_n_on;
+					btn_has_change = true;
+				}
 				if (btn_has_change){
 					uint8_t btn_val = val2note[btn_array_to_value(current_btn)];
 					if (t_last_note != 0)
@@ -91,16 +99,20 @@ void loop() {
 			}
 			//Serial.println(t_last_note);
 			
-			if (cmd_val%4 != current_2w){ // Reading 2-way switch
-				uint8_t sw = cmd_val%4; // 0 1 2
-				controlChange(0, current_2w+11, 0);
-				controlChange(0, sw+11, 127);
-				current_2w = sw;
+			if (cmd_2w != current_2w){ // Reading 2-way switch
+				//uint8_t sw = cmd_val % 4; // 0 1 2
+				controlChange(0, current_2w+12, 0);
+				controlChange(0, cmd_2w+12, 127);
+				current_2w = cmd_2w;
 				sw_has_change = true ;
 			}		
 			
-			if (current_acc != cmd_acc){ // Reading Acceleration.
-				controlChange(0, 4, 64-int(cmd_acc/2)+10);
+			if (current_acc != cmd_acc){ // Reading Acceleration
+				uint8_t output_val = 127 - int(float(cmd_acc) * 80. / 127.);
+				controlChange(0, 4, output_val);
+				//Serial.print(cmd_acc);
+				//Serial.print(", ");
+				//Serial.println(output_val);
 				current_acc = cmd_acc;
 				acc_has_change = true ;
 			}
