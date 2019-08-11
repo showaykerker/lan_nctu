@@ -60,3 +60,6 @@
 	* The blue line and red line represents the yz-value reading.
 	* The green line is the length of the 2 most recent critical time steps.
 	* The orange line is the filtered value.
+
+## Members
+啟萱、宣堯、修瑋
