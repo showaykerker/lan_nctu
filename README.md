@@ -17,7 +17,7 @@
 * [CC] Control #4 is for the mapped value of accelerometer measurement.
 * [CC] Control #8 ~ Control #10 are for buttons.
 * [CC] Control #12 ~ Control #14 is for the 2 way switch.
-* [CV] Buttons are used to perform different note with different combinations. (val2note in `reciever.ino`)
+* [CV] Buttons are used to perform different note with different combinations. (val2note in `[reciever.ino](https://github.com/showaykerker/lan_nctu/blob/master/receiver/receiver.ino)`)
 #### VCV to Reciever
 * [CV] VCV pass a value to reciever through channel #1 MW.
 
@@ -27,8 +27,8 @@
 * Each data is a 16-bit integer,
 	* The first 8 bits from the high bits represent the shaking time.
 		* Bit 7 is currently not in used.
-		* Bit 0~6 is an interger mapping from (20 ms ~ 2000 ms) to (0 ~ 127).
-		* The value is decided by the define part of [lan.ino](https://github.com/showaykerker/lan_nctu/blob/master/lan/lan.ino).
+		* Bit 0~6 is an interger mapping from ( 20 ms ~ 2000 ms ) to ( 0 ~ 127 ).
+		* The value is decided by the define part of [lan.ino](https://github.com/showaykerker/lan_nctu/blob/master/lan/lan.ino#L11).
 	* The last 8 bits represent the button and switch states.
 		* Bit 0 from the low bits represent the state of button 1.
 		* Bit 1 from the low bits represent the state of button 2.
@@ -56,7 +56,7 @@
 		* Second, it finds 2 time neighbhoring steps whose values are across 0 as critical time steps.
 		* Third, it calculates the length of the 2 most recent critical time steps.
 	* In [lan.ino](https://github.com/showaykerker/lan_nctu/blob/master/lan/lan.ino)
-		* The length is mapped from 2 (*10ms) ~ 200 (*10ms) to 0 ~ 127.
+		* The length is mapped from 2 ( *10ms ) ~ 200 ( *10ms ) to 0 ~ 127.
 		* Then a simple low pass filter is applied.
 * The Result can be shown below.
 	* ![image](https://github.com/showaykerker/lan_nctu/blob/master/asset/delay_calculation.png)
