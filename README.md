@@ -17,7 +17,7 @@
 * [CC] Control #4 is for the mapped value of accelerometer measurement.
 * [CC] Control #8 ~ Control #10 are for buttons.
 * [CC] Control #12 ~ Control #14 is for the 2 way switch.
-* [CV] Buttons are used to perform different note with different combinations. (val2note in `[reciever.ino](https://github.com/showaykerker/lan_nctu/blob/master/receiver/receiver.ino)`)
+* [CV] Buttons are used to perform different note with different combinations. (val2note in [reciever.ino](https://github.com/showaykerker/lan_nctu/blob/master/receiver/receiver.ino))
 #### VCV to Reciever
 * [CV] VCV pass a value to reciever through channel #1 MW.
 
