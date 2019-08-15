@@ -6,8 +6,6 @@
 ## Demo 影片
 [![Lannctu Demo Video](https://img.youtube.com/vi/T7qD4VoRuG8/maxresdefault.jpg)](https://youtu.be/T7qD4VoRuG8)
 
-{%youtube T7qD4VoRuG8 %}
-
 ## 社群帳號
 * [Instagram](https://www.instagram.com/lannctu/)
 
