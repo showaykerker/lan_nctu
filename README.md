@@ -44,9 +44,9 @@
 	* Each data contains only 1 16-bit integer which represents BPM ranging from 60 ~ 540.
 	* Note that the calculated BPM has an error to the real value caused by the resolution of midi control level.
 
-### Light Pattern (TODO)
-#### Pattern 1 
-#### Pattern 2 
+### Light Pattern
+#### Pattern 1 - simple RGB
+#### Pattern 2 - Circle RGB
 #### Pattern 3 - Random
 	
 ### Calculations of Imu.
@@ -63,6 +63,10 @@
 	* The blue line and red line represents the yz-value reading.
 	* The green line is the length of the 2 most recent critical time steps.
 	* The orange line is the filtered value.
+
+## TODO
+### Bugs
+* The 2-way switch will affect the light pattern
 
 ## Members
 啟萱、宣堯、修瑋
